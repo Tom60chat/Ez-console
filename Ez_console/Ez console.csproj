@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>Ez console</Title>
+    <Authors>Tom OLIVIER</Authors>
+    <Copyright>Tom OLIVIER 2022</Copyright>
+    <Description>Add colors and easily manage the console lines</Description>
+  </PropertyGroup>
+
+</Project>
