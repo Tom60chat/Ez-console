@@ -31,9 +31,10 @@ namespace Ez_console
             if (message.Length > System.Console.BufferWidth * number_of_line)
                 message = message.Substring(0, System.Console.BufferWidth - 3) + "...";
 
-            // If we go further thant the previous used line
+            // Maybe it's not a good idea
+            /*// If we go further thant the previous used line
             if (line + number_of_line > oldTop)
-                oldTop = line + number_of_line;
+                oldTop = line + number_of_line;*/
 
             // Clear lines before
             for (int i = 0; i < number_of_line; i++)
@@ -53,8 +54,8 @@ namespace Ez_console
             }
         }
 
-        public static void WriteLineWordWrap(string paragraph, int tabSize = 8) =>
-            WriteWordWrap((paragraph ?? string.Empty) + Environment.NewLine);
+        /*private static void WriteLineWordWrap(string paragraph, int tabSize = 8) =>
+            WriteWordWrap((paragraph ?? string.Empty) + Environment.NewLine);*/
 
         /// <summary>
         ///     Writes the specified data, followed by the current line terminator, to the standard output stream, while wrapping lines that would otherwise break words.
@@ -62,7 +63,7 @@ namespace Ez_console
         /// <param name="paragraph">The value to write.</param>
         /// <param name="tabSize">The value that indicates the column width of tab characters.</param>
         // https://stackoverflow.com/a/33508914
-        public static void WriteWordWrap(string paragraph, int tabSize = 8)
+        private static void WriteWordWrap(string paragraph, int tabSize = 8)
         {
             if (paragraph == null) return;
 
@@ -85,24 +86,34 @@ namespace Ez_console
                 }
 
                 foreach (string wrap in wrapped)
-                    WriteLine(wrap);
+                    WriteLine(wrap, false);
 
-                Write(process);
+                if (i == lines.Length - 1)
+                    Write(process, false);
+                else
+                    WriteLine(process, false);
             }
         }
 
         public static void WriteLine() =>
-            Write(Environment.NewLine);
-        public static void WriteLine(object value) =>
-            Write((value ?? string.Empty) + Environment.NewLine);
+            Write(Environment.NewLine, false);
+        public static void WriteLine(object value, bool word_wrap = true) =>
+            Write((value ?? string.Empty) + Environment.NewLine, word_wrap);
 
         /// <summary>
         /// Writes the text representation of the specified object to the standard output stream.
         /// </summary>
         /// <param name="value">The value to write, or null</param>
-        public static void Write(object value)
+        public static void Write(object value, bool word_wrap = true)
         {
             if (value == null) return;
+
+            if (word_wrap)
+            {
+                WriteWordWrap(value.ToString());
+                return;
+            }
+
 
             lock (console_lock)
             {

@@ -21,9 +21,9 @@ ezConsole.WriteToLine($"Hello {FC.blue}World{FC.red}!", 5);
 ezConsole.WriteToLine($"This line is very long like {BC.red}very very {FC.yellow}long{BC.reset}{FC.reset} that is going to be ouside the window and the line below are going to be eaten! (or not)", 7, 2);
 
 ezConsole.WriteLine();
-ezConsole.WriteLineWordWrap("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+ezConsole.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 
 
 // End
-ezConsole.WriteLine();
+Console.SetCursorPosition(0, Console.WindowHeight - 6);
 Console.ResetColor();
