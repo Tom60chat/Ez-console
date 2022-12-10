@@ -45,10 +45,7 @@ namespace Ez_console
             {
                 System.Console.SetCursorPosition(0, line);
 
-                if (word_wraping)
-                    WriteWordWrap(message);
-                else
-                    Write(message);
+                Write(message, word_wraping);
 
                 System.Console.SetCursorPosition(oldLeft, oldTop);
             }
@@ -113,7 +110,6 @@ namespace Ez_console
                 WriteWordWrap(value.ToString());
                 return;
             }
-
 
             lock (console_lock)
             {
