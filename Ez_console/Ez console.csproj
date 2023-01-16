@@ -10,13 +10,13 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Tom60chat/Ez-console</RepositoryUrl>
     <PackageId>Ez_console</PackageId>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>$(AssemblyVersion)</FileVersion>
-    <Version>$(AssemblyVersion)</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\Hitman\LICENSE.txt">
+    <None Include="..\LICENSE.txt">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

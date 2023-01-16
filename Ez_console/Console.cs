@@ -1,18 +1,22 @@
-﻿using System;
+﻿using Ez_console.Extensions;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace Ez_console
 {
     public abstract class Console
     {
+        #region Variables
         // https://stackoverflow.com/a/1522972
         private static readonly object console_lock = new object();
         private static ConsoleColor? default_foreground_color;
         private static ConsoleColor? default_background_color;
+        #endregion
 
+        #region Methods
         /// <summary>
         /// Writes the value to the specifique line
         /// </summary>
@@ -20,21 +24,30 @@ namespace Ez_console
         /// <param name="line">The line to write on</param>
         /// <param name="number_of_line">The number of line allowed</param>
         /// <param name="word_wraping">If we wrap the word in case the value go out of the screen</param>
-        public static void WriteToLine(object value, int line, int number_of_line = 1, bool word_wraping = true)
+        public static void WriteToLine(object value, int line, uint number_of_line = 1, bool word_wraping = true)
         {
+            // No window attached
+            if (System.Console.LargestWindowWidth + System.Console.LargestWindowHeight == 0)
+            {
+                System.Console.Write(Utility.Remove_color_code(value));
+                return;
+            }
+
             value = value ?? string.Empty;
             int oldLeft = System.Console.CursorLeft;
             int oldTop = System.Console.CursorTop;
             string message = value.ToString();
 
+            // We writing 0 line, so this mean we don't write at all
+            if (number_of_line == 0)
+                return;
+
+            if (word_wraping)
+                message = ToWordWrap(message);
+
             // If the line is too big we trim it.
             if (message.Length > System.Console.BufferWidth * number_of_line)
-                message = message.Substring(0, System.Console.BufferWidth - 3) + "...";
-
-            // Maybe it's not a good idea
-            /*// If we go further thant the previous used line
-            if (line + number_of_line > oldTop)
-                oldTop = line + number_of_line;*/
+                message = message.Substring(0, message.IndexOfNth(Environment.NewLine, number_of_line - 1) - 3) + "...";
 
             // Clear lines before
             for (int i = 0; i < number_of_line; i++)
@@ -43,39 +56,41 @@ namespace Ez_console
             // Write lines
             lock (console_lock)
             {
-                System.Console.SetCursorPosition(0, line);
+                System.Console.SetCursorPosition(0, Math.Max(0, line));
 
-                Write(message, word_wraping);
+                Write(message, false);
 
                 System.Console.SetCursorPosition(oldLeft, oldTop);
             }
         }
 
-        /*private static void WriteLineWordWrap(string paragraph, int tabSize = 8) =>
-            WriteWordWrap((paragraph ?? string.Empty) + Environment.NewLine);*/
-
         /// <summary>
-        ///     Writes the specified data, followed by the current line terminator, to the standard output stream, while wrapping lines that would otherwise break words.
+        ///     Return the specified data, followed by the current line terminator, to the standard output stream, while wrapping lines that would otherwise break words.
         /// </summary>
         /// <param name="paragraph">The value to write.</param>
         /// <param name="tabSize">The value that indicates the column width of tab characters.</param>
         // https://stackoverflow.com/a/33508914
-        private static void WriteWordWrap(string paragraph, int tabSize = 8)
+        private static string ToWordWrap(string paragraph, int tabSize = 8)
         {
-            if (paragraph == null) return;
+            if (paragraph == null) return string.Empty;
+
+            // No window attached
+            if (System.Console.LargestWindowWidth + System.Console.LargestWindowHeight == 0)
+                return paragraph;
 
             string[] lines = paragraph
                 .Replace("\t", new string(' ', tabSize))
                 .Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            var wrapped_paragraph = new StringBuilder();
 
             for (int i = 0; i < lines.Length; i++)
             {
                 string process = lines[i];
                 List<string> wrapped = new List<string>();
 
-                while (process.Length > System.Console.WindowWidth)
+                while (process.Length > System.Console.BufferWidth)
                 {
-                    int wrapAt = process.LastIndexOf(' ', Math.Min(System.Console.WindowWidth - 1, process.Length));
+                    int wrapAt = process.LastIndexOf(' ', Math.Min(System.Console.BufferWidth - 1, process.Length));
                     if (wrapAt <= 0) break;
 
                     wrapped.Add(process.Substring(0, wrapAt));
@@ -83,39 +98,49 @@ namespace Ez_console
                 }
 
                 foreach (string wrap in wrapped)
-                    WriteLine(wrap, false);
+                    wrapped_paragraph.AppendLine(wrap);
 
                 if (i == lines.Length - 1)
-                    Write(process, false);
+                    wrapped_paragraph.Append(process);
                 else
-                    WriteLine(process, false);
+                    wrapped_paragraph.AppendLine(process);
             }
+
+            return wrapped_paragraph.ToString();
         }
 
-        public static void WriteLine() =>
-            Write(Environment.NewLine, false);
-        public static void WriteLine(object value, bool word_wrap = true) =>
+        /// <summary>
+        /// Writes the text representation of the specified object, followed by the current line terminator, to the standard output stream.
+        /// </summary>
+        /// <param name="value">The value to write, or null</param>
+        /// <param name="word_wrap"></param>
+        public static void WriteLine(object value = null, bool word_wrap = true) =>
             Write((value ?? string.Empty) + Environment.NewLine, word_wrap);
 
         /// <summary>
         /// Writes the text representation of the specified object to the standard output stream.
         /// </summary>
         /// <param name="value">The value to write, or null</param>
+        /// <param name="word_wrap"></param>
         public static void Write(object value, bool word_wrap = true)
         {
             if (value == null) return;
 
-            if (word_wrap)
+            var message = value.ToString();
+            int character;
+
+            // No window attached
+            if (System.Console.LargestWindowWidth + System.Console.LargestWindowHeight == 0)
             {
-                WriteWordWrap(value.ToString());
+                System.Console.Write(Utility.Remove_color_code(value));
                 return;
             }
 
+            if (word_wrap)
+                message = ToWordWrap(message);
+
             lock (console_lock)
             {
-                var message = value.ToString();
-                int character;
-
                 using (StringReader reader = new StringReader(message))
                 {
                     while ((character = reader.Read()) > 0)
@@ -159,6 +184,9 @@ namespace Ez_console
         /// <param name="top">Line</param>
         public static void ClearLine(int line)
         {
+            // No window attached
+            if (System.Console.LargestWindowWidth + System.Console.LargestWindowHeight == 0) return;
+
             // You can't use System.Console with xUnit
             if (Environment.OSVersion.Platform == PlatformID.Win32NT && System.Console.Title.EndsWith("testhost.exe"))
                 return;
@@ -168,11 +196,12 @@ namespace Ez_console
 
             lock (console_lock)
             {
-                System.Console.SetCursorPosition(0, line);
+                System.Console.SetCursorPosition(0, Math.Max(0, line));
                 System.Console.ResetColor();
                 Write(new string(' ', System.Console.BufferWidth)); // https://stackoverflow.com/a/15421600/11873025
                 System.Console.SetCursorPosition(oldLeft, oldTop);
             }
         }
+        #endregion
     }
 }

@@ -5,7 +5,7 @@ Add colors and easily manage the console lines.
 ## Download:
 
 [Last release](https://github.com/Tom60chat/Ez-console/releases)  
-[NuGet Package](https://www.nuget.org/packages/Ez_console/1.0.1)
+[NuGet Package](https://www.nuget.org/packages/Ez_console/1.1.0)
 
 ## How to use it?
 
